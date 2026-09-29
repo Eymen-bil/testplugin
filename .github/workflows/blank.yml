@@ -8,10 +8,15 @@ jobs:
     - name: Kodları Getir
       uses: actions/checkout@v4
 
-    - name: Zip Dosyasını Aç
+    - name: Zip Dosyasını Aç ve Klasöre Gir
       run: |
         unzip *.zip
         rm *.zip
+        # Zip içerisindeki ana klasörün adını düzeltmek için:
+        if [ -d "EduCraftPlugin" ]; then
+          mv EduCraftPlugin/* . 2>/dev/null || true
+          mv EduCraftPlugin/.* . 2>/dev/null || true
+        fi
 
     - name: Java Kurulumu
       uses: actions/setup-java@v4
@@ -19,23 +24,15 @@ jobs:
         distribution: 'zulu'
         java-version: '21'
 
-    - name: Maven ile JAR Yap (Eğer pom.xml varsa)
+    - name: Maven ile JAR Yap
       run: |
         if [ -f "pom.xml" ]; then
           mvn clean package
         fi
 
-    - name: Gradle ile JAR Yap (Eğer build.gradle varsa)
-      run: |
-        if [ -f "build.gradle" ]; then
-          chmod +x gradlew || true
-          ./gradlew build || gradle build
-        fi
-
     - name: Hazır JAR Dosyasını Teslim Et
       uses: actions/upload-artifact@v4
       with:
-        name: Minecraft-Eklentiniz
+        name: EduCraftPlugin-Hazir
         path: |
           **/target/*.jar
-          **/build/libs/*.jar

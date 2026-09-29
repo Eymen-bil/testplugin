@@ -1,0 +1,41 @@
+name: Minecraft Plugin Derleyici
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Kodları Getir
+      uses: actions/checkout@v4
+
+    - name: Zip Dosyasını Aç
+      run: |
+        unzip *.zip
+        rm *.zip
+
+    - name: Java Kurulumu
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '21'
+
+    - name: Maven ile JAR Yap (Eğer pom.xml varsa)
+      run: |
+        if [ -f "pom.xml" ]; then
+          mvn clean package
+        fi
+
+    - name: Gradle ile JAR Yap (Eğer build.gradle varsa)
+      run: |
+        if [ -f "build.gradle" ]; then
+          chmod +x gradlew || true
+          ./gradlew build || gradle build
+        fi
+
+    - name: Hazır JAR Dosyasını Teslim Et
+      uses: actions/upload-artifact@v4
+      with:
+        name: Minecraft-Eklentiniz
+        path: |
+          **/target/*.jar
+          **/build/libs/*.jar
